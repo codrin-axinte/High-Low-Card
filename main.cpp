@@ -4,37 +4,51 @@
 
 using namespace std;
 
+/*
+* User Stories:
+* As a user I would like the game to be easy to play
+* As a user I woul like to be rewarded if my answer is right
+* As a user I should be able to play alone or with an AI
+* As a user I would like to enter my name
+* Rules:
+* - The first with no cash loses
+* - If a player is right he gets full cash
+* - If both players are right they both get full cash
+* - If the player is not right he loses cash
+* - If the players don't pick the same answer they can bet/raise the reward for that round
+* - Players can choose with what amount to start and set the increase/decrease rates
+*/
+
 string Str(int value){
   return std::to_string(value);
 }
-int random(int min = 1, int max = 13){
+int Num(string value){
+  return std::stoi( value );
+}
+
+int shuffle(int min = 1, int max = 13){
     srand(time(NULL));
     return rand() % ((max-min) + 1) + min;
 }
 class Wallet {
-  int value = 100;
-  int incBy = 50;
-  int decBy = 40;
-  
+  int value = 50;
+
   public:
+    
+    void reset(){
+      value = 50;
+    }
+    
     int getValue(){
       return value;
     }
-    
-    int increaseRate(){
-      return incBy;
+  
+    void increase(int amount){
+      value += amount;
     }
     
-    int decreaseRate(){
-      return decBy;
-    }
-    
-    void increase(){
-      value += incBy;
-    }
-    
-    void decrease(){
-      value -= decBy;
+    void decrease(int amount){
+        value -= amount;
     }
     
     bool isEmpty(){
@@ -65,44 +79,44 @@ class Player {
     
 };
 
-class AI : Player {
+class AI : public Player {
   
   private:
-    string mood = "default";
-  
-  public:
-
-  bool affirmative(){
-      int chance = random(1, 100);
-      return chance > 50;
+  bool getDecision(int chance = 50){
+    return rand() % 100 < chance;
   }
   
-  
+  public:
   bool getPickDecision(int card){
-    // If the current card is 1(Ace) the AI shall know that cannot be a lower card
-    if(card == 1 ){
-      return true;
+    switch(card){
+      // If the current card is 1(Ace) the AI shall know that cannot be a lower card
+      case 1:
+        return true;
+        // If the current card is 13(King) the AI shall know that cannot be a higher card
+      case 13:
+        return false;
+      case 12:
+        return getDecision(10);
+      case 11:
+        return getDecision(20);
     }
-    // If the current card is 13(King) the AI shall know that cannot be a higher card
-    if(card == 13){
-      return false;
-    }
+    
+    return getDecision(50);
   }
   
   bool getBetDecision(){
-   // Must implement the AI to choose if to bet, if yes than how much
+    
+    
   }
   
-  bool talk(){
-    // implement AI to send messages to player according his mood
+  bool wantsToBet(){
+    return false;
   }
   
-  void setMood(string value){
-     mood = value;
-  }
-  
-  string getMood(){
-    return mood;
+  string talk(){
+    //string[] messages;
+    //messages[] = "You're lucky";
+    //messages[] = "Better luck next time";
   }
   
 };
@@ -131,8 +145,6 @@ class Deck {
       
   }
    
-
-  
   bool check(bool isHigher = true){
     if(isHigher){
       return  secondCard > firstCard;
@@ -162,9 +174,9 @@ class Deck {
   }
     
   void pick(){
-      firstCard = random();
+      firstCard = shuffle();
       do {
-        secondCard = random();
+        secondCard = shuffle();
       } while(secondCard == firstCard);
   }  
 };
@@ -206,15 +218,34 @@ class Output {
       }
       cout << endl;
     }
+    
+    void won(string name, int amount){
+      cout << "[OK] " << name << " won " << Str(amount) << endl;
+    }
+    
+    void lost(string name, int amount){
+      cout << "[X] " << name << " lost " << Str(amount) << endl;
+    }
+    
+    void picked(string name, bool pick){
+      info(name + " picked: ", pick ? "Higher" : "Lower");
+    }
+    
+    void header(string message){
+      int len = message.length();
+      divider(len);
+      cout << message << endl;
+      divider(len);
+    }
 };
-
 
 class Game {
   private:
     bool keepAlive = true;
     int round = 0;
-   
-    
+    int bet = 50;
+    int loseBet = 40;
+    int roundBet = 0;
   public:
     bool isRunning(){
       return keepAlive;
@@ -230,42 +261,92 @@ class Game {
     
     void newRound(){
       round++;
+      roundBet = bet;
     }
     
+   void reset(){
+     round = 0;
+   }
    
+   void setBet(int amount){
+    bet = amount;
+    roundBet = bet;
+   }
+   
+   void setLoseBet(int amount){
+     loseBet = amount;
+   }
+   
+   void raiseBet(int amount){
+     roundBet += amount;
+   }
+   
+   
+   int getBet(){
+     return roundBet;
+   }
+   
+   int getLoseBet(){
+     return loseBet;
+   }
 };
 Output out;
 Game game;
 Deck deck;
 Player player;
-Player player2;
+AI ai;
 int main(){
-
+  game.setBet(50);
+  game.setLoseBet(0);
+  player.setName("Player1");
+  ai.setName("Player2");
   while(game.isRunning()){
     game.newRound();
     deck.pick();
     cout << "Round " << game.getRound() << endl;
-    out.divider(30);
-    cout << "Your wallet: " << player.wallet.getValue();
-    cout << " | Player2 wallet: " << player2.wallet.getValue() << endl;
-    out.divider(30);
+    string header = player.getName() + " wallet: " + Str(player.wallet.getValue()) + " | " + ai.getName() + " wallet: " + Str(ai.wallet.getValue());
+    out.header(header);
     out.info("Card: ", deck.displayFirstCard());
     bool isHigher = out.confirm("The next card is higher?");
-    
-    out.blank();
+    bool aiHiger = ai.getPickDecision(deck.getFirstCard());
+    out.picked(player.getName(), isHigher);
+    out.picked(ai.getName(), aiHiger);
+    if(isHigher != aiHiger){
+      // Player can bet
+      if(out.confirm(ai.getName() + " picked the opposite of you. Do you want to bet?")){
+        string amount = out.ask("With how much you want to raise the bet? ");
+        out.info('Raising the amount with: ', amount);
+        game.riseBet(Num(amount));
+      } else if(ai.wantsToBet()) {
+        // Now the Ai wants a bet
+      }
+    }
     out.info("Second card was: ", deck.displaySecondCard());
-   if(deck.check(isHigher)) {
-      player.wallet.increase();
-      cout << "[OK] You're lucky! You've won " << player.wallet.increaseRate() << endl;
+    int bet = game.getBet();
+    if(deck.check(aiHiger)){
+      ai.wallet.increase(bet);
+      out.won(ai.getName(), bet);
     } else {
-      player.wallet.decrease();
-      cout << "[X] Better luck next time! You've lost " << player.wallet.decreaseRate() << endl;
+      ai.wallet.decrease(game.getLoseBet());
+      out.lost(ai.getName(), game.getLoseBet());
+    }
+  
+   if(deck.check(isHigher)) {
+      player.wallet.increase(bet);
+      out.won(player.getName(), bet);
+    } else {
+      player.wallet.decrease(game.getLoseBet());
+      out.lost(player.getName(), game.getLoseBet());
     }
     out.blank();
     
     deck.reset();
     if(player.wallet.isEmpty()){
        if(out.confirm("You're broke! You want to restart?")){
+         player.wallet.reset();
+         ai.wallet.reset();
+         game.reset();
+         deck.reset();
          // restart game
        } else {
          game.exit();
