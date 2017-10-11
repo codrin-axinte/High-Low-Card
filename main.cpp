@@ -1,80 +1,74 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <string>
 
 using namespace std;
 
 /*
-* User Stories:
-* As a user I would like the game to be easy to play
-* As a user I woul like to be rewarded if my answer is right
-* As a user I should be able to play alone or with an AI
-* As a user I would like to enter my name
-* Rules:
-* - The first with no cash loses
-* - If a player is right he gets full bet
-* - If both players are right they get half of the bet
-* - If the player is not right he loses cash
-* - If the players don't pick the same answer they can bet/raise the reward for that round
-* - Players can choose with what amount to start and set the increase/decrease bets
+* The shuffle funtion returns a random number between a min and a max.
 */
-
 int shuffle(int min = 1, int max = 13){
     srand(time(NULL));
     return rand() % ((max-min) + 1) + min;
 }
-
+/*
+ * The Role of the Wallet is to store the money of a player. It's basically a wrapper for math functions for sum,sub and some comparations. 
+*/
 class Wallet {
   int value = 50;
 
   public:
-    
+    // Resets the value back to 50
     void reset(){
       value = 50;
     }
     
-    int getValue(){
-      return value;
-    }
-  
+	
+	// Returns the value. Amount of cash in wallet
     int amount(){
       return value;
     }
-  
+	// Icreases the cash with a given amount
     void increase(int amount){
       value += amount;
     }
-    
+
+	// Decreases the cash with a given amount
     void decrease(int amount){
         value -= amount;
     }
     
+	// There is this amount of cash in wallet? Checks if there are more or at least equal the amount given
     bool has(int amount){
       return value >= amount;
     }
     
+	// This stricts compare the greater of the amount given
     bool greater(int amount){
       return value > amount;
     }
-    
+    // Check if the amount given is strictly lesser than cash amount
     bool lesser(int amount){
       return value < amount;
     }
     
-    
+    // A nice format disply for the cash
     string toString(){
       return "£"+to_string(value);
     }
     
+	// Checks if the wallet is empty
     bool isEmpty(){
       return value <= 0;
     }
-    
+    // Checks if the wallet is not empty
     bool isNotEmpy(){
       return !isEmpty();
     }
   
 };
+
 
 class Player {
   
@@ -82,24 +76,30 @@ class Player {
     string name;
   
   public:
-   Wallet wallet;
-   
+	Wallet wallet;
+
+   // Sets the player name
    void setName(string value){
      name = value;
    }
-   
+
+  // Returns the player name
   string getName(){
     return name;
   }
     
 };
-
+/*
+* The AI extends the player the preserve the same functions as him, AI can have a name(they have a soul too, they deserve more)
+*/
 class AI : public Player {
   
   private:
-  int countWins = 0;
-  int countLosts = 0;
+	  // Some variables to store the ai performances so we can have a mood system, AI should talk based on his mood system
+	  int countWins = 0; 
+	  int countLosts = 0;
   
+ // Returns a decision based on the given chance, defaults to a 50/50 chance. This is mainly used to pick a card
   bool getDecision(int chance = 50){
     return rand() % 100 < chance;
   }
@@ -109,34 +109,40 @@ class AI : public Player {
     switch(card){
       case 1:    // If the current card is 1(Ace) the AI shall know that cannot be a lower card
         return true;
-      case 2:
+      case 2:	// There is a very small chance to get a lower card less than 2, so is like 90% chance to pick a higher card
         return getDecision(90);
-      case 3:
+      case 3:	// As the same as two, this time we assume like 80% chance to pick a higher card
         return getDecision(80);
-      case 13:        // If the current card is 13(King) the AI shall know that cannot be a higher card
+      case 13:  // If the current card is 13(King) the AI shall know that cannot be a higher card
         return false;
-      case 12:
+      case 12:	// Same as 3, this time the opposite, there is a 10% chance to pick a higher card
         return getDecision(10);
-      case 11:
+      case 11: // Same as 12, with a 20% chance
         return getDecision(20);
+	  default: // If is none from above, we default to a 50/50 chance
+		  return getDecision(50);
     }
-    
-    return getDecision(50);
   }
-  
+  /*
+  * The idea for the bet amount is to let the AI actually think how much he can bet based on his stats like: his current money, loses/wins, the current card.
+  */
   int getBetAmount(Wallet wallet){
-    // TODO:: Not sure if to implement
+	 // TODO:: Not sure if to implement or not
   }
   
-  
+  /*
+  * Returns AI's decision to bet or not based on his stats
+  */
   bool wantsToBet(int defaultBet = 0, int loseBet = 0) {
-    if(wallet.lesser(loseBet)){
+	if(wallet.lesser(loseBet)){
         return getDecision(20);
     }
     
     return false;
   }
-  
+  /*
+  * Returns a random message based on his mood. Mood is influenced by his wins/loses.
+  */
   string talk(){
     //string[] messages;
     //messages[] = "You're lucky";
@@ -145,7 +151,9 @@ class AI : public Player {
   
 };
 
-
+/*
+* The Deck class 
+*/
 class Deck {
   private:
     int firstCard = 0;
@@ -410,7 +418,7 @@ int main(){
     
     // ARE YOU EVEN BROKE, BRO?
     if(ai.wallet.isEmpty()){
-      cout << "[OK] Yey! You hav won the game with " << player.wallet.amount() << " in your wallet. Congrats!" << endl;
+      cout << "[OK] Yey! You have won the game with " << player.wallet.amount() << " in your wallet. Congrats!" << endl;
       game.exit();
     }
     
