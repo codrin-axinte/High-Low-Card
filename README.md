@@ -1,5 +1,9 @@
 #  High-Low Card
 
+### Description
+
+A player is show a random playing card, then asked to decide whether the next card will be "higher" or "lower". If the guess is correct the player is awarded with a 'cash' price.
+
 ### Rules:
   * The first with no cash loses
   * If a player is right he gets full bet
