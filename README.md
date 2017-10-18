@@ -14,7 +14,7 @@ A player is show a random playing card, then asked to decide whether the next ca
 
 ### User Stories:
   * As a user I would like the game to be easy to play
-  * As a user I woul like to be rewarded if my answer is right
+  * As a user I would like to be rewarded if my answer is right
   * As a user I should be able to play against an AI
   * As a user I would like to enter my name
  
