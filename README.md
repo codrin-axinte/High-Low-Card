@@ -27,7 +27,11 @@ Windows:
 ```
 
 ## Usage example
+
 On the game start the player is asked to set a default winning bet to play. This amount will be given to the player if he guessed right, however if it's wrong then a the half amount of the default bet will be withdrawn from his wallet. To make the game more engaging there is a `raise bet` event which is triggered if players chosed opposite options then they can raise the bet.
+
+
+
 
 ### User Stories:
  *As a player I would like...*
