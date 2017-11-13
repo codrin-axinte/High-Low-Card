@@ -1,7 +1,7 @@
 # High-Low Card
 > A player is show a random playing card, then asked to decide whether the next card will be "higher" or "lower". If the guess is correct the player is awarded with a 'cash' price.
 
-![Flowchart](https://github.com/codrin-axinte/High-Low-Card/blob/master/High-LowCardFlowchart.png)
+![Flowchart](https://github.com/codrin-axinte/High-Low-Card/blob/master/High-Low%20Card%20Flowchart.png)
 One to two paragraph statement about your product and what it does.
 
 ### Rules:
