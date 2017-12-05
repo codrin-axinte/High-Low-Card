@@ -5,15 +5,7 @@
 
 The game is based on the players intuition to bet if the next card will be higher. Whenever the player is right, will be awarded with a amount of cash, otherwise will lose another amount of cash.
 
-### Rules:
-  * The first with no cash loses
-  * If a player is right he gets full bet
-  * If both players are right they get half of the bet
-  * If the player is not right he loses cash
-  * If players don't pick the same answer they can bet/raise the reward for that round
-  * Players can choose with how much amount to start and set the increase/decrease bets
-
-## Installation
+# Installation
 OS X & Linux:
 ```sh
 g++ -Wall main.cpp -o highlowcard
@@ -25,20 +17,53 @@ Windows:
 ```
  Run the executable
 ```
+# Rules:
+  * The first with no cash loses
+  * If a player is right he gets full bet
+  * If both players are right they get half of the bet
+  * If the player is not right he loses cash
+  * If players don't pick the same answer they can bet/raise the reward for that round
+  * Players can choose with how much amount to start and set the increase/decrease bets
 
-## Usage example
+# Usage example
 
 On the game start the player is asked to set a default winning bet to play. This amount will be given to the player if he guessed right, however if it's wrong then a the half amount of the default bet will be withdrawn from his wallet. To make the game more engaging there is a `raise bet` event which is triggered if players chosed opposite options then they can raise the bet.
 
-
-
-
-### User Stories:
+# User Stories:
  *As a player I would like...*
-  * To enter my name
-  * The game to be easy to play and engaging
+  * To enter my name so I can make the difference between my wallet and the opponent's one.
+  * The game to be easy to play, just to choose between *yes* or a *no*.
   * To be rewarded if my answer is right
-  * To be able to play against an AI
+  * To be able to play against an AI, so the AI can pick a card.
+  
+ # AI Picking Card
+
+> Returns a true or a false value if there is a chance.
+```c++
+bool getDecision(int chance = 50) {
+    return rand() % 100 < chance;
+}
+```
+>This is how the AI '`thinks`' when he is picking a decision.
+```c++
+ bool getPickDecision(int card){
+    switch(card){
+      case 1:    // If the current card is 1(Ace) the AI shall know that cannot be a lower card
+        return true;
+      case 2:	// There is a very small chance to get a lower card less than 2, so is like 90% chance to pick a higher card
+        return getDecision(90);
+      case 3:	// As the same as the second card, this time we assume like 80% chance to pick a higher card
+        return getDecision(80);
+      case 13:  // If the current card is 13(King) the AI shall know that cannot be a higher card
+        return false;
+      case 12:	// Same as 3, this time the opposite, there is a 10% chance to pick a higher card
+        return getDecision(10);
+      case 11: // Same as 12, with a 20% chance
+        return getDecision(20);
+	  default: // If is none from above, we default to a 50/50 chance
+		  return getDecision(50);
+    }
+```
 
 ### Possible Future Extensions
     * A nice simple GUI.
