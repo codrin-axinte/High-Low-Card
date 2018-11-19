@@ -9,7 +9,6 @@ using namespace std;
 * The shuffle funtion returns a random number between a min and a max.
 */
 int shuffle(int min = 1, int max = 13){
-    srand(time(NULL));
     return rand() % ((max-min) + 1) + min;
 }
 /*
@@ -87,6 +86,10 @@ class Player {
   string getName(){
     return name;
   }
+
+  string toString(){
+	  return name + " Wallet: " + wallet.toString();
+  }
     
 };
 /*
@@ -156,14 +159,9 @@ class AI : public Player {
 */
 class Deck {
   private:
-    int firstCard = 0;
-    int secondCard = 0;
+    int firstCard, secondCard = 0;
    public:
-    string display(int number){
-     if(number > 1 && number <= 10){
-        return to_string(number);
-      }
-  
+    string display(int number){  
       switch(number){
         case 1:
           return "Ace";
@@ -173,6 +171,8 @@ class Deck {
           return "Queen";
         case 13:
           return "King";
+		default:
+			return to_string(number);
       }
       
   }
@@ -223,9 +223,13 @@ class Output {
         cin >> option;
         return option;
     }
+
+	int askForInt(string question){
+		return stoi(ask(question));
+	}
     
     bool confirm(string question){
-      string option = ask(question + " (y/n): ");
+      string option = ask(question + " (yes/no): ");
       return option == "y" || option == "yes";
     }
     
@@ -351,16 +355,17 @@ AI ai;
 
 int main(){
   // SETUP
+  srand(time(NULL));
   player.setName(out.ask("What is your name? "));
   ai.setName("Player2");
-  game.bet.set(stoi(out.ask("In what bet do yo want to play? ")), 40);
+  game.bet.set(out.askForInt("In what bet do yo want to play? "), 40);
   // GAME LOOP
   while(game.isRunning()){
     // START A NEW ROUND
     game.newRound();
     deck.pick();
     cout << "Round " << game.getRound() << endl;
-    out.header(player.getName() + " wallet: " + player.wallet.toString() + " | " + ai.getName() + " wallet: " + ai.wallet.toString());
+    out.header(player.toString() + " | " + ai.toString());
     out.info("Card: ", deck.displayFirstCard());
     bool isHigher = out.confirm("The next card is higher?");
     bool aiHigher = ai.getPickDecision(deck.getFirstCard());
@@ -371,16 +376,16 @@ int main(){
     if(isHigher != aiHigher){
       // CHECK WHO WANTS TO BET
       if(out.confirm(ai.getName() + " picked the opposite of you. Do you want to bet?") || ai.wantsToBet()) {
-        string amount;
+        int amount;
         // MAKE SURE EVERYONE IS ABLE TO PAY THAT AMOUNT
         do {
-           amount = out.ask("With how much you want to raise the bet? ");
-          if(stoi(amount) > player.wallet.amount()){
+           amount = out.askForInt("With how much you want to raise the bet? ");
+          if(amount > player.wallet.amount()){
             out.warning("You don't have enough enough money to bet.");
           }
-        } while(stoi(amount) > player.wallet.amount());
-        out.info("Raising the amount with: ", amount);
-        game.bet.rise(stoi(amount));
+        } while(amount > player.wallet.amount());
+        out.info("Raising the amount with: ", to_string(amount));
+        game.bet.rise(amount);
       }
     }
     
